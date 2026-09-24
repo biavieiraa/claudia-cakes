@@ -583,6 +583,43 @@ footer a{ text-decoration:none; color:#fff; }
   margin-bottom: 14px;
   color: var(--brown);
 }
+
+/* CAMPOS DE FORMULÁRIO DO CARRINHO */
+.cart-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+.cart-field-group label {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--brown);
+}
+.cart-input {
+  width: 100%;
+  border: 1px solid var(--pink-line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--brown);
+  background: var(--bg);
+  box-sizing: border-box;
+}
+.cart-input:focus {
+  outline: 2px solid var(--pink);
+  background: #fff;
+}
+.cart-row-fields {
+  display: flex;
+  gap: 10px;
+}
+.cart-row-fields .cart-field-group {
+  flex: 1;
+}
+
 .cart-obs-input {
   width: 100%;
   border: 1px solid var(--pink-line);
@@ -592,9 +629,12 @@ footer a{ text-decoration:none; color:#fff; }
   font-size: 0.85rem;
   margin-bottom: 14px;
   resize: none;
+  background: var(--bg);
+  box-sizing: border-box;
 }
 .cart-obs-input:focus {
   outline: 2px solid var(--pink);
+  background: #fff;
 }
 
 /* OPÇÕES DE SELEÇÃO NO MODAL */
@@ -640,6 +680,7 @@ footer a{ text-decoration:none; color:#fff; }
   .hero h1{ font-size: 2rem; }
   nav{ justify-content:center; width:100%; }
   .header-inner{ justify-content:center; }
+  .cart-row-fields { flex-direction: column; gap: 0; }
 }
 
 .tab-btn:focus-visible, .btn:focus-visible{
@@ -1070,7 +1111,29 @@ footer a{ text-decoration:none; color:#fff; }
         <span>Total:</span>
         <span id="cart-total-price">R$ 0,00</span>
       </div>
-      <textarea id="cart-obs" class="cart-obs-input" placeholder="Observações (ex: Nome para o bolo, data e horário de entrega...)" rows="2"></textarea>
+
+      <!-- DADOS DE RETIRADA -->
+      <div class="cart-field-group">
+        <label for="cliente-nome">Seu Nome *</label>
+        <input type="text" id="cliente-nome" class="cart-input" placeholder="Digite seu nome completo">
+      </div>
+
+      <div class="cart-row-fields">
+        <div class="cart-field-group">
+          <label for="retirada-data">Dia da Retirada *</label>
+          <input type="date" id="retirada-data" class="cart-input">
+        </div>
+        <div class="cart-field-group">
+          <label for="retirada-hora">Horário *</label>
+          <input type="time" id="retirada-hora" class="cart-input">
+        </div>
+      </div>
+
+      <div class="cart-field-group">
+        <label for="cart-obs">Observações (opcional)</label>
+        <textarea id="cart-obs" class="cart-obs-input" placeholder="Ex: Nome para topo de bolo, velas, alergias..." rows="2"></textarea>
+      </div>
+
       <button class="btn btn-primary" onclick="checkoutWhatsApp()" style="width:100%; background:var(--whatsapp); justify-content:center;">
         Finalizar Pedido no WhatsApp 📲
       </button>
@@ -1326,9 +1389,33 @@ function checkoutWhatsApp() {
     return;
   }
 
-  let msg = "🛒 *NOVO PEDIDO - CLAUDIA CAKES*\n\n";
-  let total = 0;
+  const nome = document.getElementById('cliente-nome').value.trim();
+  const dataVal = document.getElementById('retirada-data').value;
+  const hora = document.getElementById('retirada-hora').value;
 
+  if (!nome) {
+    alert('Por favor, informe o seu nome!');
+    document.getElementById('cliente-nome').focus();
+    return;
+  }
+
+  if (!dataVal || !hora) {
+    alert('Por favor, selecione o dia e o horário de retirada!');
+    if (!dataVal) document.getElementById('retirada-data').focus();
+    else document.getElementById('retirada-hora').focus();
+    return;
+  }
+
+  // Formatar data de AAAA-MM-DD para DD/MM/AAAA
+  const dataFormatada = dataVal.split('-').reverse().join('/');
+
+  let msg = "🛒 *NOVO PEDIDO - CLAUDIA CAKES*\n\n";
+  msg += `👤 *Cliente:* ${nome}\n`;
+  msg += `📅 *Data da Retirada:* ${dataFormatada}\n`;
+  msg += `⏰ *Horário:* ${hora}\n\n`;
+  msg += `*Itens do Pedido:*\n`;
+
+  let total = 0;
   cart.forEach(item => {
     const itemTotal = item.price * item.qty;
     total += itemTotal;
